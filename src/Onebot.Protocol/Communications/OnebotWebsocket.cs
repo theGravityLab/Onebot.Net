@@ -22,7 +22,8 @@ namespace Onebot.Protocol.Communications
         private readonly ClientWebSocket _socket;
         private readonly JsonSerializerOptions _options;
 
-        private readonly Dictionary<string, object> awaitings = new();
+        private readonly Queue<string> receiptQueue = new();
+        private readonly Queue<JsonElement> eventQueue = new();
 
         public OnebotWebsocket(ClientWebSocket socket)
         {
@@ -52,43 +53,49 @@ namespace Onebot.Protocol.Communications
             var data = Encoding.UTF8.GetBytes(json);
             var buffer = new ArraySegment<byte>(data);
             await _socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
-            awaitings.Add(wrapper.Echo, args.Output);
             int esp = 0;
-            while (true)
+            var s = new CancellationTokenSource();
+            while (receiptQueue.Count == 0)
             {
-                var obj = awaitings[wrapper.Echo];
-                if (obj is IReceipt receipt)
-                {
-                    awaitings.Remove(wrapper.Echo);
-                    return receipt;
-                }
-                else
-                {
-                    await Task.Delay(300);
-                    esp += 300;
-                }
-
-                if (esp >= 3000)
-                {
-                    return default;
-                }
+                s.CancelAfter(3000);
+                await GetAsync(s.Token);
             }
+
+            var receiptJson = receiptQueue.Dequeue();
+            var receiptType = args.Output;
+            var type = typeof(ReceiptWrapper<>).MakeGenericType(receiptType);
+            var receipt = (ReceiptWrapper<IReceipt>)JsonSerializer.Deserialize(receiptJson, type, _options);
+            return receipt.Data;
         }
 
         public async Task<IEvent> ReadAsync(CancellationToken token)
+        {
+            while (eventQueue.Count == 0)
+            {
+                await GetAsync(token);
+            }
+
+            var evt = eventQueue.Dequeue();
+            return ParseEvent(evt);
+        }
+
+        private async Task GetAsync(CancellationToken token)
         {
             var bytes = new byte[1024];
             var buffer = new ArraySegment<byte>(bytes);
             var result = await _socket.ReceiveAsync(buffer, token);
             var data = buffer.Skip(buffer.Offset).Take(result.Count).ToArray();
             var msg = Encoding.UTF8.GetString(data);
-            var evt = ParseEvent(msg);
-            if (evt == null)
-            {
-                return await ReadAsync(token);
-            }
 
-            return evt;
+            var obj = JsonSerializer.Deserialize<JsonElement>(msg);
+            if (obj.TryGetProperty("post_type", out var post_type))
+            {
+                eventQueue.Enqueue(obj);
+            }
+            else if (obj.TryGetProperty("echo", out var echo))
+            {
+                receiptQueue.Enqueue(msg);
+            }
         }
 
         private ActionWrapper MakeAction(IAction action) => new()
@@ -101,89 +108,75 @@ namespace Onebot.Protocol.Communications
             Params = action
         };
 
-        private IEvent ParseEvent(string json)
+        private IEvent ParseEvent(JsonElement obj)
         {
-            var obj = JsonSerializer.Deserialize<JsonElement>(json);
-            if (obj.TryGetProperty("post_type", out var post_type))
+            var post_type = obj.GetProperty("post_type");
+            switch (post_type.GetString())
             {
-                switch (post_type.GetString())
+                case "meta_event":
                 {
-                    case "meta_event":
+                    var meta_event = obj.GetProperty("meta_event_type");
+                    switch (meta_event.GetString())
                     {
-                        var meta_event = obj.GetProperty("meta_event_type");
-                        switch (meta_event.GetString())
-                        {
-                            case "lifecycle":
-                                var sub_type = obj.GetProperty("sub_type");
-                                switch (sub_type.GetString())
-                                {
-                                    case "connect":
-                                        return new ConnectEvent();
-                                }
-
-                                break;
-                            case "heartbeat":
-                                return new HeartbeatEvent();
-                        }
-
-                        break;
-                    }
-                    case "message":
-                    {
-                        var message_type = obj.GetProperty("message_type");
-                        switch (message_type.GetString())
-                        {
-                            case "group":
-
+                        case "lifecycle":
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
                             {
-                                var sub_type = obj.GetProperty("sub_type");
-                                switch (sub_type.GetString())
-                                {
-                                    case "normal":
-                                        return JsonSerializer.Deserialize<GroupMessageEvent>(json, _options);
-                                }
-
-                                break;
+                                case "connect":
+                                    return new ConnectEvent();
                             }
-                            case "private":
-                            {
-                                var sub_type = obj.GetProperty("sub_type");
-                                switch (sub_type.GetString())
-                                {
-                                    case "friend":
-                                        return JsonSerializer.Deserialize<FriendMessageEvent>(json, _options);
-                                    case "group":
-                                        // temp conversation
-                                        break;
-                                    case "group_self":
-                                        // group self-send
-                                        break;
-                                    case "other":
-                                        // other
-                                        break;
-                                }
 
-                                break;
-                            }
-                        }
-
-                        break;
+                            break;
+                        case "heartbeat":
+                            return new HeartbeatEvent();
                     }
+
+                    break;
                 }
+                case "message":
+                {
+                    var message_type = obj.GetProperty("message_type");
+                    switch (message_type.GetString())
+                    {
+                        case "group":
 
-                return new UnknownEvent(json);
+                        {
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
+                            {
+                                case "normal":
+                                    return JsonSerializer.Deserialize<GroupMessageEvent>(obj.GetRawText(), _options);
+                            }
+
+                            break;
+                        }
+                        case "private":
+                        {
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
+                            {
+                                case "friend":
+                                    return JsonSerializer.Deserialize<FriendMessageEvent>(obj.GetRawText(), _options);
+                                case "group":
+                                    // temp conversation
+                                    break;
+                                case "group_self":
+                                    // group self-send
+                                    break;
+                                case "other":
+                                    // other
+                                    break;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    break;
+                }
             }
 
-            if (obj.TryGetProperty("echo", out var echo) && awaitings.ContainsKey(echo.GetString()) && awaitings[echo.GetString()] is Type)
-            {
-                var receiptType = (Type)awaitings[echo.GetString()];
-                var type = typeof(ReceiptWrapper<>).MakeGenericType(receiptType);
-                var receipt =  (ReceiptWrapper<IReceipt>)JsonSerializer.Deserialize(json, type, _options);
-                awaitings[echo.GetString()] = receipt.Data;
-            }
-
-
-            return null;
+            return new UnknownEvent(obj.GetRawText());
         }
     }
 }

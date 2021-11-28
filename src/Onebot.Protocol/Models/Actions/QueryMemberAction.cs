@@ -1,4 +1,5 @@
 using System;
+using Onebot.Protocol.Models.Receipts;
 
 namespace Onebot.Protocol.Models.Actions
 {

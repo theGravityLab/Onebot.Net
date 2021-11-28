@@ -110,7 +110,8 @@ namespace Onebot.Protocol.Communications
             {
                 FriendMessageAction it => "send_private_msg",
                 GroupMessageAction it => "send_group_msg",
-                QueryFriendAction it => "get_group_info"
+                QueryGroupAction it => "get_group_info",
+                QueryMemberAction it => "get_group_member_info"
             },
             Params = action
         };

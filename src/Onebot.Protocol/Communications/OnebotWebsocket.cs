@@ -108,8 +108,9 @@ namespace Onebot.Protocol.Communications
         {
             Action = action switch
             {
-                FriendMessageAction friend => "send_private_msg",
-                GroupMessageAction group => "send_group_msg"
+                FriendMessageAction it => "send_private_msg",
+                GroupMessageAction it => "send_group_msg",
+                QueryFriendAction it => "get_group_info"
             },
             Params = action
         };

@@ -25,7 +25,7 @@ namespace Onebot.Protocol.Communications
         private readonly JsonSerializerOptions _options;
 
 
-        private readonly Queue<string> receiptQueue = new();
+        private readonly Dictionary<string, JsonElement> receiptDict = new();
         private readonly Queue<JsonElement> eventQueue = new();
 
         public OnebotWebsocket(WebsocketClient client)
@@ -62,16 +62,18 @@ namespace Onebot.Protocol.Communications
             var wrapper = MakeAction(args);
             var json = JsonSerializer.Serialize(wrapper, _options);
             _client.Send(json);
-            while (receiptQueue.Count == 0 && !token.IsCancellationRequested)
+            while (receiptDict.Count == 0 && !token.IsCancellationRequested && !receiptDict.ContainsKey(wrapper.Echo))
             {
                 Thread.Sleep(100);
             }
+
             if (token.IsCancellationRequested) return null;
 
-            var receiptJson = receiptQueue.Dequeue();
+            var receiptJson = receiptDict[wrapper.Echo];
+            receiptDict.Remove(wrapper.Echo);
             var receiptType = args.Output;
             var type = typeof(ReceiptWrapper<>).MakeGenericType(receiptType);
-            var receipt = (ReceiptWrapper<IReceipt>)JsonSerializer.Deserialize(receiptJson, type, _options);
+            var receipt = (ReceiptWrapper<IReceipt>)receiptJson.Deserialize(type, _options);
             return receipt.Data;
         }
 
@@ -81,6 +83,7 @@ namespace Onebot.Protocol.Communications
             {
                 Thread.Sleep(100);
             }
+
             if (token.IsCancellationRequested) return null;
 
             var evt = eventQueue.Dequeue();
@@ -93,14 +96,15 @@ namespace Onebot.Protocol.Communications
             {
                 return;
             }
+
             var obj = JsonSerializer.Deserialize<JsonElement>(msg);
             if (obj.TryGetProperty("post_type", out var _))
             {
                 eventQueue.Enqueue(obj);
             }
-            else if (obj.TryGetProperty("echo", out var _))
+            else if (obj.TryGetProperty("echo", out var echo))
             {
-                receiptQueue.Enqueue(msg);
+                receiptDict.Add(echo.GetString()!, obj);
             }
         }
 
@@ -122,66 +126,66 @@ namespace Onebot.Protocol.Communications
             switch (post_type.GetString())
             {
                 case "meta_event":
+                {
+                    var meta_event = obj.GetProperty("meta_event_type");
+                    switch (meta_event.GetString())
                     {
-                        var meta_event = obj.GetProperty("meta_event_type");
-                        switch (meta_event.GetString())
-                        {
-                            case "lifecycle":
-                                var sub_type = obj.GetProperty("sub_type");
-                                switch (sub_type.GetString())
-                                {
-                                    case "connect":
-                                        return new ConnectEvent();
-                                }
+                        case "lifecycle":
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
+                            {
+                                case "connect":
+                                    return new ConnectEvent();
+                            }
 
-                                break;
-                            case "heartbeat":
-                                return new HeartbeatEvent();
-                        }
-
-                        break;
+                            break;
+                        case "heartbeat":
+                            return new HeartbeatEvent();
                     }
+
+                    break;
+                }
                 case "message":
+                {
+                    var message_type = obj.GetProperty("message_type");
+                    switch (message_type.GetString())
                     {
-                        var message_type = obj.GetProperty("message_type");
-                        switch (message_type.GetString())
+                        case "group":
+
                         {
-                            case "group":
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
+                            {
+                                case "normal":
+                                    return JsonSerializer.Deserialize<GroupMessageEvent>(obj.GetRawText(), _options);
+                            }
 
-                                {
-                                    var sub_type = obj.GetProperty("sub_type");
-                                    switch (sub_type.GetString())
-                                    {
-                                        case "normal":
-                                            return JsonSerializer.Deserialize<GroupMessageEvent>(obj.GetRawText(), _options);
-                                    }
-
-                                    break;
-                                }
-                            case "private":
-                                {
-                                    var sub_type = obj.GetProperty("sub_type");
-                                    switch (sub_type.GetString())
-                                    {
-                                        case "friend":
-                                            return JsonSerializer.Deserialize<FriendMessageEvent>(obj.GetRawText(), _options);
-                                        case "group":
-                                            // temp conversation
-                                            break;
-                                        case "group_self":
-                                            // group self-send
-                                            break;
-                                        case "other":
-                                            // other
-                                            break;
-                                    }
-
-                                    break;
-                                }
+                            break;
                         }
+                        case "private":
+                        {
+                            var sub_type = obj.GetProperty("sub_type");
+                            switch (sub_type.GetString())
+                            {
+                                case "friend":
+                                    return JsonSerializer.Deserialize<FriendMessageEvent>(obj.GetRawText(), _options);
+                                case "group":
+                                    // temp conversation
+                                    break;
+                                case "group_self":
+                                    // group self-send
+                                    break;
+                                case "other":
+                                    // other
+                                    break;
+                            }
 
-                        break;
+                            break;
+                        }
                     }
+
+                    break;
+                }
             }
 
             return new UnknownEvent(obj.GetRawText());

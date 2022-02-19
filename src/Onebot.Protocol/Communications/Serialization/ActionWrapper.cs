@@ -7,6 +7,6 @@ namespace Onebot.Protocol.Communications.Serialization
     {
         public string Action { get; set; }
         public object Params { get; set; }
-        public string Echo { get; } = Guid.NewGuid().ToString();
+        public string Echo { get; set; }
     }
 }

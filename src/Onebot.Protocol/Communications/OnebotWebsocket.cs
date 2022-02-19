@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -25,7 +26,7 @@ namespace Onebot.Protocol.Communications
         private readonly JsonSerializerOptions _options;
 
 
-        private readonly Dictionary<string, JsonElement> receiptDict = new();
+        private readonly ConcurrentDictionary<string, JsonElement> receiptDict = new();
         private readonly Queue<JsonElement> eventQueue = new();
 
         public OnebotWebsocket(WebsocketClient client)
@@ -62,19 +63,18 @@ namespace Onebot.Protocol.Communications
             var wrapper = MakeAction(args);
             var json = JsonSerializer.Serialize(wrapper, _options);
             _client.Send(json);
-            while (receiptDict.Count == 0 && !token.IsCancellationRequested && !receiptDict.ContainsKey(wrapper.Echo))
+            while (receiptDict.Count == 0 || (!token.IsCancellationRequested && !receiptDict.ContainsKey(wrapper.Echo)))
             {
                 Thread.Sleep(100);
             }
 
             if (token.IsCancellationRequested) return null;
 
-            var receiptJson = receiptDict[wrapper.Echo];
-            receiptDict.Remove(wrapper.Echo);
+            receiptDict.Remove(wrapper.Echo, out var receiptJson);
             var receiptType = args.Output;
             var type = typeof(ReceiptWrapper<>).MakeGenericType(receiptType);
-            var receipt = (ReceiptWrapper<IReceipt>)receiptJson.Deserialize(type, _options);
-            return receipt.Data;
+            var receipt = receiptJson.Deserialize(type, _options);
+            return (IReceipt)type.GetProperty(nameof(ReceiptWrapper<IReceipt>.Data)).GetValue(receipt);
         }
 
         public IEvent Read(CancellationToken token)
@@ -104,7 +104,7 @@ namespace Onebot.Protocol.Communications
             }
             else if (obj.TryGetProperty("echo", out var echo))
             {
-                receiptDict.Add(echo.GetString()!, obj);
+                receiptDict.AddOrUpdate(echo.GetString()!, obj, (key,it) => it);
             }
         }
 
@@ -117,7 +117,8 @@ namespace Onebot.Protocol.Communications
                 QueryGroupAction it => "get_group_info",
                 QueryMemberAction it => "get_group_member_info"
             },
-            Params = action
+            Params = action,
+            Echo = Guid.NewGuid().ToString(),
         };
 
         private IEvent ParseEvent(JsonElement obj)

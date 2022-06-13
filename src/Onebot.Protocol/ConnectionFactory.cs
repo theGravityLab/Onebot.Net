@@ -1,4 +1,5 @@
 using System;
+using Onebot.Protocol.BuiltinConnections;
 
 namespace Onebot.Protocol
 {
@@ -6,7 +7,8 @@ namespace Onebot.Protocol
     {
         public static IConnection FromWebsocket(string host, int port, string accessToken)
         {
-            throw new NotImplementedException();
+            var socket = new WebsocketConnection(host, port, accessToken);
+            return socket;
         }
 
         public static IConnection FromHttp(string host, int port, string accessToken)

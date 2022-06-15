@@ -3,5 +3,5 @@ using Onebot.Protocol.Models.Messages;
 
 namespace Onebot.Protocol.Models.Actions
 {
-    public record FriendMessageAction(long UserId, IEnumerable<MessageSegment> Message) : IAction;
+    public record FriendMessageAction(string UserId, Message Message) : IAction;
 }

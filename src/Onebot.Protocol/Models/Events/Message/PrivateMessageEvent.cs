@@ -12,7 +12,7 @@ public record PrivateMessageEvent : EventBase
     /// <summary>
     /// 消息内容
     /// </summary>
-    public object Message;
+    public Messages.Message Message;
     /// <summary>
     /// 消息内容的替代表示, 可以为空
     /// </summary>

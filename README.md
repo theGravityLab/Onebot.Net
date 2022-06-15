@@ -1,10 +1,12 @@
 # Onebot.Net
 
-和支持 Onebot 协议的服务器贴贴。
+和支持 Onebot V12 协议的服务器贴贴。
 
 ### Onebot Sucks
 
 Message 触犯了多态序列化，为了优雅，当前版本不实现各种消息，请自行 bind.
+
+直接摆烂，整个都是按照 Onebot 协议写的，字段名一个都没改。
 
 ## 安装
 
@@ -15,11 +17,17 @@ dotnet add package Onebot.Protocol
 ## 示例
 
 ```csharp
-var socket = OnebotWebsocket.Connect("localhost", 7890, "CALLMEFATHER");
-
-var receipt = await socket.WriteAsync(new FriendMessageEvent(10001, new List<MessageCell>(){ Type = "plain", Data = new Dictionary<string, object>(){ {"text", "txsb"} } }));
-
-var evt = await socket.ReadAsync(CancellationToken.None);
-Console.WriteLine(evt);
+var client = new OnebotClient(ConnectionFactory.FromWebsocket("localhost", 7890, "WHO_S_YOUR_DADDY"));
+await client.SendPrivateMessageAsync("10000", new Message()
+{
+    new MessageSegment()
+    {
+        Type = "text",
+        Data = new Dictionary<string, string>()
+        {
+            {"text", "Ob 的消息模型就是这样的，是不是很原汁原味？就问你还原的像不像吧。"}
+        }
+    }
+});
 
 ```

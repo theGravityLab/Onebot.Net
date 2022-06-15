@@ -16,7 +16,7 @@ namespace Onebot.Protocol
             Connection = connection;
         }
 
-        public async Task<string> SendFriendMessageAsync(long id, IEnumerable<MessageSegment> message)
+        public async Task<string> SendPrivateMessageAsync(string id, Message message)
         {
             var args = new FriendMessageAction(id, message);
             var receipt = await Connection.SendAsync(args) as MessageReceipt;

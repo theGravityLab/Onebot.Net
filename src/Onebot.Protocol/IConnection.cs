@@ -10,7 +10,5 @@ namespace Onebot.Protocol
     {
         Task<IReceipt> SendAsync(IAction action);
         Task<EventBase> FetchAsync(CancellationToken token);
-
-        Task ConnectAsync();
     }
 }

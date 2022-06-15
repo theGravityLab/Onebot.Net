@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Onebot.Protocol.Communications.Serialization;
 using Onebot.Protocol.Models;
 using Onebot.Protocol.Models.Actions;
@@ -29,6 +30,7 @@ namespace Onebot.Protocol.BuiltinConnections
             _host = host;
             _port = port;
             _accessToken = accessToken;
+            
 
             client = new WebsocketClient(new Uri($"ws://{host}:{port}"), () =>
             {
@@ -72,16 +74,16 @@ namespace Onebot.Protocol.BuiltinConnections
                 }
             }
         }
-
-        public async Task ConnectAsync()
-        {
-            await client.Start();
-        }
+        
 
         public async Task<EventBase> FetchAsync(CancellationToken token)
         {
             return await Task.Run(() =>
             {
+                if (!client.IsStarted)
+                {
+                    client.Start().Wait(token);
+                }
                 while (!token.IsCancellationRequested)
                 {
                     if (events.Count > 0)
@@ -98,6 +100,14 @@ namespace Onebot.Protocol.BuiltinConnections
         public Task<IReceipt> SendAsync(IAction action)
         {
             throw new NotImplementedException();
+        }
+
+        ~WebsocketConnection()
+        {
+            if (client.IsRunning)
+            {
+                client.Stop(WebSocketCloseStatus.NormalClosure, "Normal closure");
+            }
         }
     }
 }

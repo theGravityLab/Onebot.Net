@@ -8,7 +8,7 @@ namespace Onebot.Protocol
 {
     public interface IConnection
     {
-        Task<IReceipt> SendAsync(IAction action);
+        Task<ReceiptBase> SendAsync(ActionBase action, CancellationToken token);
         Task<EventBase> FetchAsync(CancellationToken token);
     }
 }

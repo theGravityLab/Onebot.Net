@@ -1,6 +1,6 @@
 namespace Onebot.Protocol.Models;
 
-public class Status
+public record Status
 {
     /// <summary>
     /// 是否各项状态都符合预期，OneBot 实现各模块均正常

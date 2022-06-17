@@ -24,5 +24,57 @@ namespace Onebot.Protocol.Models.Messages
             Type = typeName,
             Data = new Dictionary<string, string>(values)
         };
+
+        public static MessageSegment Text(string text) => From("text", new[]
+        {
+            new KeyValuePair<string, string>("text", text)
+        });
+
+        public static MessageSegment Mention(string userId) => From("mention", new[]
+        {
+            new KeyValuePair<string, string>("mention", userId)
+        });
+
+        public static MessageSegment MentionAll() => From("mention_all", null);
+
+        public static MessageSegment Image(string fileId) => From("image", new[]
+        {
+            new KeyValuePair<string, string>("file_id", fileId)
+        });
+
+        public static MessageSegment Voice(string fileId) => From("voice", new[]
+        {
+            new KeyValuePair<string, string>("file_id", fileId)
+        });
+
+        public static MessageSegment Audio(string fileId) => From("audio", new[]
+        {
+            new KeyValuePair<string, string>("file_id", fileId)
+        });
+        
+        public static MessageSegment Video(string fileId) => From("video", new[]
+        {
+            new KeyValuePair<string, string>("file_id", fileId)
+        });
+        
+        public static MessageSegment File(string fileId) => From("file", new[]
+        {
+            new KeyValuePair<string, string>("file_id", fileId)
+        });
+
+        public static MessageSegment Location(string latitude, string longitude, string title, string content) => From(
+            "location", new[]
+            {
+                new KeyValuePair<string, string>("latitude", latitude),
+                new KeyValuePair<string, string>("longitude", longitude),
+                new KeyValuePair<string, string>("title", title),
+                new KeyValuePair<string, string>("content", content)
+            });
+
+        public static MessageSegment Reply(string messageId, string userId) => From("reply", new[]
+        {
+            new KeyValuePair<string, string>("message_id", messageId),
+            new KeyValuePair<string, string>("user_id", userId)
+        });
     }
 }

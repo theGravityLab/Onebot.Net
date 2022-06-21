@@ -14,67 +14,68 @@ namespace Onebot.Protocol.Models.Messages
         /// 消息段名称
         /// </summary>
         public string Type { get; set; }
+
         /// <summary>
         /// 消息段参数
         /// </summary>
-        public IDictionary<string, string> Data { get; set; }
+        public IDictionary<string, object> Data { get; set; }
 
-        public static MessageSegment From(string typeName, IEnumerable<KeyValuePair<string, string>> values) => new()
+        public static MessageSegment From(string typeName, IEnumerable<KeyValuePair<string, object>> values) => new()
         {
             Type = typeName,
-            Data = new Dictionary<string, string>(values)
+            Data = new Dictionary<string, object>(values)
         };
 
         public static MessageSegment Text(string text) => From("text", new[]
         {
-            new KeyValuePair<string, string>("text", text)
+            new KeyValuePair<string, object>("text", text)
         });
 
         public static MessageSegment Mention(string userId) => From("mention", new[]
         {
-            new KeyValuePair<string, string>("mention", userId)
+            new KeyValuePair<string, object>("mention", userId)
         });
 
         public static MessageSegment MentionAll() => From("mention_all", null);
 
         public static MessageSegment Image(string fileId) => From("image", new[]
         {
-            new KeyValuePair<string, string>("file_id", fileId)
+            new KeyValuePair<string, object>("file_id", fileId)
         });
 
         public static MessageSegment Voice(string fileId) => From("voice", new[]
         {
-            new KeyValuePair<string, string>("file_id", fileId)
+            new KeyValuePair<string, object>("file_id", fileId)
         });
 
         public static MessageSegment Audio(string fileId) => From("audio", new[]
         {
-            new KeyValuePair<string, string>("file_id", fileId)
+            new KeyValuePair<string, object>("file_id", fileId)
         });
-        
+
         public static MessageSegment Video(string fileId) => From("video", new[]
         {
-            new KeyValuePair<string, string>("file_id", fileId)
+            new KeyValuePair<string, object>("file_id", fileId)
         });
-        
+
         public static MessageSegment File(string fileId) => From("file", new[]
         {
-            new KeyValuePair<string, string>("file_id", fileId)
+            new KeyValuePair<string, object>("file_id", fileId)
         });
 
         public static MessageSegment Location(string latitude, string longitude, string title, string content) => From(
             "location", new[]
             {
-                new KeyValuePair<string, string>("latitude", latitude),
-                new KeyValuePair<string, string>("longitude", longitude),
-                new KeyValuePair<string, string>("title", title),
-                new KeyValuePair<string, string>("content", content)
+                new KeyValuePair<string, object>("latitude", latitude),
+                new KeyValuePair<string, object>("longitude", longitude),
+                new KeyValuePair<string, object>("title", title),
+                new KeyValuePair<string, object>("content", content)
             });
 
         public static MessageSegment Reply(string messageId, string userId) => From("reply", new[]
         {
-            new KeyValuePair<string, string>("message_id", messageId),
-            new KeyValuePair<string, string>("user_id", userId)
+            new KeyValuePair<string, object>("message_id", messageId),
+            new KeyValuePair<string, object>("user_id", userId)
         });
     }
 }

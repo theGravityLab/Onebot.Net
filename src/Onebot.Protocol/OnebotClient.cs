@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Onebot.Protocol.Models.Actions;
@@ -13,7 +14,7 @@ namespace Onebot.Protocol
     {
         public IConnection Connection { get; private set; }
 
-        private const int TIMEOUT = 1500;
+        private const int TIMEOUT = 15000;
 
         public OnebotClient(IConnection connection)
         {
@@ -105,7 +106,8 @@ namespace Onebot.Protocol
             {
                 Type = uri.Scheme switch { "file" => "path", "http" => "url", "https" => "url" },
                 Url = uri.AbsoluteUri,
-                Path = uri.AbsolutePath
+                Path = uri.AbsoluteUri,
+                Name = Guid.NewGuid().ToString()
             };
             
             return await SendWithTimeoutAsync(action, TIMEOUT) as UploadFileReceipt;

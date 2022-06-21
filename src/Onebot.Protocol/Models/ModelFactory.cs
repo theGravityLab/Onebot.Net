@@ -24,7 +24,8 @@ public static class ModelFactory
             ContractResolver = new DefaultContractResolver()
             {
                 NamingStrategy = new SnakeCaseNamingStrategy()
-            }
+            },
+            NullValueHandling = NullValueHandling.Ignore
         };
         serializer = JsonSerializer.Create(settings);
     }

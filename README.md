@@ -14,7 +14,7 @@ Message 触犯了多态序列化，为了优雅，当前版本不实现各种消
 dotnet add package Onebot.Protocol
 ```
 
-~~ 虽然叫 Protocol 其实多种 `IConnection` 实现都被包含在这个包，懒得搞 Onebot.Websocket Onebot.Http 之类的包了 ~~
+~~虽然叫 Protocol 其实多种 `IConnection` 实现都被包含在这个包，懒得搞 Onebot.Websocket Onebot.Http 之类的包了~~
 
 ## 示例
 

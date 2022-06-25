@@ -51,7 +51,7 @@ class Foo
 {
     readonly OnebotClient _client;
     public Foo(OnebotClient client) => _client = client;
-    void Bar() => _client.SendPrivateMessageAsync(...);
+    async void Bar() => await _client.SendPrivateMessageAsync(...);
 }
 ```
 

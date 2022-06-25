@@ -35,6 +35,12 @@ namespace Onebot.Protocol
             }
         }
 
+        public async Task<GetSelfInfoReceipt> GetSelfInfoAsync()
+        {
+            var action = new GetSelfInfoAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetSelfInfoReceipt;
+        }
+
         public async Task<GetGroupInfoReceipt> GetGroupInfoAsync(string id)
         {
             var action = new GetGroupInfoAction()
@@ -44,6 +50,81 @@ namespace Onebot.Protocol
             return await SendWithTimeoutAsync(action, TIMEOUT) as GetGroupInfoReceipt;
         }
 
+        public async Task<LeaveGroupReceipt> LeaveGroupAsync(string groupId)
+        {
+            var action = new LeaveGroupAction()
+            {
+                GroupId = groupId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as LeaveGroupReceipt;
+        }
+
+        public async Task<KickGroupMemberReceipt> KickGroupMemberAsync(string groupId, string userId)
+        {
+            var action = new KickGroupMemberAction()
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as KickGroupMemberReceipt;
+        }
+
+        public async Task<BanGroupMemberReceipt> BanGroupMemberAsync(string groupId, string userId)
+        {
+            var action = new BanGroupMemberAction()
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as BanGroupMemberReceipt;
+        }
+        
+        public async Task<UnbanGroupMemberReceipt> UnbanGroupMemberAsync(string groupId, string userId)
+        {
+            var action = new UnbanGroupMemberAction()
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as UnbanGroupMemberReceipt;
+        }
+        
+        public async Task<SetGroupAdminReceipt> SetGroupAdminAsync(string groupId, string userId)
+        {
+            var action = new SetGroupAdminAction()
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as SetGroupAdminReceipt;
+        }
+        
+        public async Task<UnsetGroupAdminReceipt> UnsetGroupAdminAsync(string groupId, string userId)
+        {
+            var action = new UnsetGroupAdminAction()
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as UnsetGroupAdminReceipt;
+        }
+
+        public async Task<SetGroupNameReceipt> SetGroupNameAsync(string groupId, string groupName)
+        {
+            var action = new SetGroupNameAction()
+            {
+                GroupId = groupId,
+                GroupName = groupName
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as SetGroupNameReceipt;
+        }
+
+        public async Task<GetGroupListReceipt> GetGroupListAsync()
+        {
+            var action = new GetGroupListAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetGroupListReceipt;;
+        }
+
         public async Task<GetUserInfoReceipt> GetUserInfoAsync(string id)
         {
             var action = new GetUserInfoAction()
@@ -51,6 +132,12 @@ namespace Onebot.Protocol
                 UserId = id
             };
             return await SendWithTimeoutAsync(action, TIMEOUT) as GetUserInfoReceipt;
+        }
+
+        public async Task<GetFriendListReceipt> GetFriendListAsync()
+        {
+            var action = new GetFriendListAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetFriendListReceipt;
         }
 
         public async Task<GetGroupMemberInfoReceipt> GetGroupMemberInfoAsync(string groupId, string userId)
@@ -94,6 +181,14 @@ namespace Onebot.Protocol
             return await SendWithTimeoutAsync(action, TIMEOUT) as SendMessageReceipt;
         }
 
+        public async Task<DeleteMessageReceipt> DeleteMessageAsync(string messageId)
+        {
+            var action = new DeleteMessageAction()
+            {
+                MessageId = messageId
+            };
+            return await SendWithTimeoutAsync(action, TIMEOUT) as DeleteMessageReceipt;
+        }
         public async Task<UploadFileReceipt> UploadFileAsync(string url)
         {
             var uri = new Uri(url);
@@ -104,13 +199,24 @@ namespace Onebot.Protocol
 
             var action = new UploadFileAction()
             {
-                Type = uri.Scheme switch { "file" => "path", "http" => "url", "https" => "url" },
+                Type = uri.Scheme switch { "file" => "path", "http" => "url", "https" => "url", "base64" => "data" },
                 Url = uri.AbsoluteUri,
                 Path = uri.AbsoluteUri,
+                Data = uri.ToString(),
                 Name = Guid.NewGuid().ToString()
             };
             
             return await SendWithTimeoutAsync(action, TIMEOUT) as UploadFileReceipt;
+        }
+        
+        public async Task<GetFileReceipt> GetFileAsync(string fileId, string type = "url")
+        {
+            var action = new GetFileAction()
+            {
+                FileId = fileId,
+                Type = type
+            };
+            return await SendWithTimeoutAsync(action ,TIMEOUT) as GetFileReceipt;
         }
     }
 }

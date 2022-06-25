@@ -27,7 +27,7 @@ public record UploadFileAction : ActionBase
     /// <summary>
     /// 下载 URL 时需要添加的 HTTP 请求头，可选传入，当 type 为 url 时 OneBot 实现必须在请求 URL 时加上这些请求头
     /// </summary>
-    public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
+    public IDictionary<string, string> Headers { get; set; }
     /// <summary>
     /// 文件路径，当 type 为 path 时必须传入，OneBot 实现必须能从此路径访问要上传的文件
     /// </summary>
@@ -35,7 +35,7 @@ public record UploadFileAction : ActionBase
     /// <summary>
     /// 文件数据，当 type 为 data 时必须传入
     /// </summary>
-    public byte[] Data { get; set; }
+    public string Data { get; set; }
     /// <summary>
     /// 文件数据（原始二进制）的 SHA256 校验和，全小写，可选传入
     /// </summary>

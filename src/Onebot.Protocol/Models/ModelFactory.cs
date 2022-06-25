@@ -7,6 +7,7 @@ using Onebot.Protocol.Models.Actions;
 using Onebot.Protocol.Models.Events;
 using Onebot.Protocol.Models.Events.Message;
 using Onebot.Protocol.Models.Events.Meta;
+using Onebot.Protocol.Models.Events.Notice;
 using Onebot.Protocol.Models.Receipts;
 
 namespace Onebot.Protocol.Models;
@@ -14,7 +15,7 @@ namespace Onebot.Protocol.Models;
 public static class ModelFactory
 {
     private static readonly JsonSerializer serializer;
-    
+
     private static readonly JsonSerializerSettings settings;
 
     static ModelFactory()
@@ -32,9 +33,23 @@ public static class ModelFactory
 
     private static readonly Dictionary<string, Type> eventRegistry = new()
     {
+        // meta
         { "meta.heartbeat", typeof(HeartbeatEvent) },
+        // message
         { "message.group", typeof(GroupMessageEvent) },
-        { "message.private", typeof(PrivateMessageEvent) }
+        { "message.private", typeof(PrivateMessageEvent) },
+        // notice.private
+        { "notice.friend_increase", typeof(FriendIncreaseEvent) },
+        { "notice.friend_decrease", typeof(FriendDecreaseEvent) },
+        { "notice.private_message_delete", typeof(PrivateMessageDeleteEvent) },
+        // notice.group
+        { "notice.group_member_increase", typeof(GroupMemberIncreaseEvent) },
+        { "notice.group_member_decrease", typeof(GroupMemberDecreaseEvent) },
+        { "notice.group_member_ban", typeof(GroupMemberBanEvent) },
+        { "notice.group_member_unban", typeof(GroupMemberUnbanEvent) },
+        { "notice.group_admin_set", typeof(GroupAdminSetEvent) },
+        { "notice.group_admin_unset", typeof(GroupAdminUnsetEvent) },
+        { "notice.group_message_delete", typeof(GroupMessageDeleteEvent) }
     };
 
     public static EventBase ConstructEvent(JObject obj)

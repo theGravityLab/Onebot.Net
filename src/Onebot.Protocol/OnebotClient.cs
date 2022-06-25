@@ -35,6 +35,24 @@ namespace Onebot.Protocol
             }
         }
 
+        public async Task<GetSupportedActionsReceipt> GetSupportedActionsAsync()
+        {
+            var action = new GetSupportedActionsAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetSupportedActionsReceipt;
+        }
+        
+        public async Task<GetStatusReceipt> GetStatusAsync()
+        {
+            var action = new GetStatusAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetStatusReceipt;
+        }
+        
+        public async Task<GetVersionReceipt> GetVersionAsync()
+        {
+            var action = new GetVersionAction();
+            return await SendWithTimeoutAsync(action, TIMEOUT) as GetVersionReceipt;
+        }
+
         public async Task<GetSelfInfoReceipt> GetSelfInfoAsync()
         {
             var action = new GetSelfInfoAction();

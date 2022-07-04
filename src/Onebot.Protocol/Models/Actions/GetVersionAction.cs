@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Receipts;
 namespace Onebot.Protocol.Models.Actions;
 
 /// <summary>
-/// 获取版本信息
+///     获取版本信息
 /// </summary>
 public record GetVersionAction : ActionBase
 {

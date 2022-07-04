@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Receipts;
 namespace Onebot.Protocol.Models.Actions;
 
 /// <summary>
-/// 获取机器人自身信息
+///     获取机器人自身信息
 /// </summary>
 public record GetSelfInfoAction : ActionBase
 {

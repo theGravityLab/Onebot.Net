@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Receipts;
 namespace Onebot.Protocol.Models.Actions;
 
 /// <summary>
-/// 获取运行状态
+///     获取运行状态
 /// </summary>
 public record GetStatusAction : ActionBase
 {

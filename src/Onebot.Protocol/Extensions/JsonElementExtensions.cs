@@ -1,10 +1,11 @@
 using System.Text.Json;
 
-namespace Onebot.Protocol.Extensions
+namespace Onebot.Protocol.Extensions;
+
+public static class JsonElementExtensions
 {
-    public static class JsonElementExtensions
+    public static T GetObject<T>(this JsonElement element, JsonSerializerOptions options = null)
     {
-        public static T GetObject<T>(this JsonElement element, JsonSerializerOptions options = null) =>
-            JsonSerializer.Deserialize<T>(element.GetRawText(), options ?? new JsonSerializerOptions());
+        return JsonSerializer.Deserialize<T>(element.GetRawText(), options ?? new JsonSerializerOptions());
     }
 }

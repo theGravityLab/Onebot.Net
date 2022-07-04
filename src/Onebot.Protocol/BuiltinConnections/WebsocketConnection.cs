@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,126 +11,116 @@ using Onebot.Protocol.Models.Events;
 using Onebot.Protocol.Models.Receipts;
 using Websocket.Client;
 
-namespace Onebot.Protocol.BuiltinConnections
+namespace Onebot.Protocol.BuiltinConnections;
+
+internal class WebsocketConnection : IConnection
 {
-    internal class WebsocketConnection : IConnection
+    private readonly string _accessToken;
+    private readonly string _host;
+    private readonly int _port;
+
+    private readonly WebsocketClient client;
+    private readonly Queue<EventBase> events = new();
+    private readonly Dictionary<string, (Type, ReceiptBase)> receipts = new();
+
+    public WebsocketConnection(string host, int port, string accessToken)
     {
-        private readonly string _host;
-        private readonly int _port;
-        private readonly string _accessToken;
+        _host = host;
+        _port = port;
+        _accessToken = accessToken;
 
-        readonly WebsocketClient client;
-        readonly Queue<EventBase> events = new();
-        readonly Dictionary<string, (Type, ReceiptBase)> receipts = new();
 
-        public WebsocketConnection(string host, int port, string accessToken)
+        client = new WebsocketClient(new Uri($"ws://{host}:{port}"), () =>
         {
-            _host = host;
-            _port = port;
-            _accessToken = accessToken;
+            var x = new ClientWebSocket();
+            x.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+            return x;
+        });
+
+        client.MessageReceived.Subscribe(HandleMessage);
+    }
 
 
-            client = new WebsocketClient(new Uri($"ws://{host}:{port}"), () =>
-            {
-                var x = new ClientWebSocket();
-                x.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
-                return x;
-            });
-
-            client.MessageReceived.Subscribe(HandleMessage);
-        }
-
-        ~WebsocketConnection()
+    public async Task<EventBase> FetchAsync(CancellationToken token)
+    {
+        return await Task.Run(() =>
         {
-            if (client.IsRunning)
+            if (!client.IsStarted) client.Start().Wait(token);
+
+            while (!token.IsCancellationRequested)
             {
-                client.Stop(WebSocketCloseStatus.NormalClosure, "Normal closure");
+                if (events.Count > 0) return events.Dequeue();
+
+                Thread.Sleep(300);
             }
-        }
 
-        private void HandleMessage(ResponseMessage message)
+            return new ShutdownEvent();
+        }, token);
+    }
+
+    public async Task<ReceiptBase> SendAsync(ActionBase action, CancellationToken token)
+    {
+        var echo = Guid.NewGuid().ToString();
+        var json = ModelFactory.SerializeAction(action, echo);
+        receipts.Add(echo, (action.Receipt, null));
+        client.Send(json);
+
+        return await Task.Run(() =>
         {
-            switch (message.MessageType)
+            while (!token.IsCancellationRequested)
             {
-                case WebSocketMessageType.Close:
+                if (receipts[echo].Item2 != null)
                 {
-                    // 远端服务器关闭
-                    break;
+                    var result = receipts[echo];
+                    receipts.Remove(echo);
+                    return result.Item2;
                 }
-                case WebSocketMessageType.Binary:
-                {
-                    // 暂不支持
-                    break;
-                }
-                case WebSocketMessageType.Text:
-                {
-                    JObject json = JsonConvert.DeserializeObject<JObject>(message.Text);
-                    if (json!.ContainsKey("echo"))
-                    {
-                        // 回执
-                        var echo = json.Value<string>("echo")!;
-                        var receipt = ModelFactory.ConstructReceipt(json, receipts[echo].Item1);
-                        receipts[echo] = (receipts[echo].Item1, receipt);
-                    }
-                    else
-                    {
-                        // 事件
-                        var evt = ModelFactory.ConstructEvent(json);
-                        events.Enqueue(evt);
-                    }
 
-                    break;
-                }
+                Thread.Sleep(300);
             }
-        }
 
+            throw new OperationCanceledException("Timeout for waiting for some receipt");
+        }, token);
+    }
 
-        public async Task<EventBase> FetchAsync(CancellationToken token)
+    ~WebsocketConnection()
+    {
+        if (client.IsRunning) client.Stop(WebSocketCloseStatus.NormalClosure, "Normal closure");
+    }
+
+    private void HandleMessage(ResponseMessage message)
+    {
+        switch (message.MessageType)
         {
-            return await Task.Run(() =>
+            case WebSocketMessageType.Close:
             {
-                if (!client.IsStarted)
-                {
-                    client.Start().Wait(token);
-                }
-
-                while (!token.IsCancellationRequested)
-                {
-                    if (events.Count > 0)
-                    {
-                        return events.Dequeue();
-                    }
-
-                    Thread.Sleep(300);
-                }
-
-                return new ShutdownEvent();
-            }, token);
-        }
-
-        public async Task<ReceiptBase> SendAsync(ActionBase action, CancellationToken token)
-        {
-            var echo = Guid.NewGuid().ToString();
-            var json = ModelFactory.SerializeAction(action, echo);
-            receipts.Add(echo, (action.Receipt, null));
-            client.Send(json);
-
-            return await Task.Run(() =>
+                // 远端服务器关闭
+                break;
+            }
+            case WebSocketMessageType.Binary:
             {
-                while (!token.IsCancellationRequested)
+                // 暂不支持
+                break;
+            }
+            case WebSocketMessageType.Text:
+            {
+                var json = JsonConvert.DeserializeObject<JObject>(message.Text);
+                if (json!.ContainsKey("echo"))
                 {
-                    if (receipts[echo].Item2 != null)
-                    {
-                        var result = receipts[echo];
-                        receipts.Remove(echo);
-                        return result.Item2;
-                    }
-
-                    Thread.Sleep(300);
+                    // 回执
+                    var echo = json.Value<string>("echo")!;
+                    var receipt = ModelFactory.ConstructReceipt(json, receipts[echo].Item1);
+                    receipts[echo] = (receipts[echo].Item1, receipt);
+                }
+                else
+                {
+                    // 事件
+                    var evt = ModelFactory.ConstructEvent(json);
+                    events.Enqueue(evt);
                 }
 
-                throw new OperationCanceledException("Timeout for waiting for some receipt");
-            }, token);
+                break;
+            }
         }
     }
 }

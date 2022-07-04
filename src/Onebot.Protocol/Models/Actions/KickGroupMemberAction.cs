@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Receipts;
 namespace Onebot.Protocol.Models.Actions;
 
 /// <summary>
-/// 踢出群成员
+///     踢出群成员
 /// </summary>
 public record KickGroupMemberAction : ActionBase
 {
@@ -12,12 +12,12 @@ public record KickGroupMemberAction : ActionBase
     internal override Type Receipt => typeof(KickGroupMemberReceipt);
 
     /// <summary>
-    /// 群 ID
+    ///     群 ID
     /// </summary>
     public string GroupId { get; set; }
 
     /// <summary>
-    /// 用户 ID
+    ///     用户 ID
     /// </summary>
     public string UserId { get; set; }
 }

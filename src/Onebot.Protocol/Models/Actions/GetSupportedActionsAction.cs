@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Receipts;
 namespace Onebot.Protocol.Models.Actions;
 
 /// <summary>
-/// 获取支持的动作列表
+///     获取支持的动作列表
 /// </summary>
 public record GetSupportedActionsAction : ActionBase
 {

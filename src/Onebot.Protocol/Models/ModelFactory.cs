@@ -18,19 +18,6 @@ public static class ModelFactory
 
     private static readonly JsonSerializerSettings settings;
 
-    static ModelFactory()
-    {
-        settings = new JsonSerializerSettings()
-        {
-            ContractResolver = new DefaultContractResolver()
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            },
-            NullValueHandling = NullValueHandling.Ignore
-        };
-        serializer = JsonSerializer.Create(settings);
-    }
-
     private static readonly Dictionary<string, Type> eventRegistry = new()
     {
         // meta
@@ -52,22 +39,33 @@ public static class ModelFactory
         { "notice.group_message_delete", typeof(GroupMessageDeleteEvent) }
     };
 
+    static ModelFactory()
+    {
+        settings = new JsonSerializerSettings
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            },
+            NullValueHandling = NullValueHandling.Ignore
+        };
+        serializer = JsonSerializer.Create(settings);
+    }
+
     public static EventBase ConstructEvent(JObject obj)
     {
-        string type = obj.Value<string>("type");
-        string detailedType = obj.Value<string>("detail_type");
-        string subType = obj.Value<string>("sub_type");
+        var type = obj.Value<string>("type");
+        var detailedType = obj.Value<string>("detail_type");
+        var subType = obj.Value<string>("sub_type");
 
-        string key = $"{type}.{detailedType}";
+        var key = $"{type}.{detailedType}";
         if (eventRegistry.ContainsKey(key))
         {
             var evt = obj.ToObject(eventRegistry[key], serializer) as EventBase;
             return evt;
         }
-        else
-        {
-            return new UnknownEvent();
-        }
+
+        return new UnknownEvent();
     }
 
     public static string SerializeAction(ActionBase action, string echo)

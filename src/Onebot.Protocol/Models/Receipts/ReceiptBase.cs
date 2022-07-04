@@ -1,3 +1,3 @@
 namespace Onebot.Protocol.Models.Receipts;
 
-public abstract record ReceiptBase();
+public abstract record ReceiptBase;

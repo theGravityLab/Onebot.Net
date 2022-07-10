@@ -8,8 +8,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record GetUserInfoAction : ActionBase
 {
-    internal override string Action => "get_user_info";
-    internal override Type Receipt => typeof(GetUserInfoReceipt);
+    protected override string Action => "get_user_info";
+    protected override Type Receipt => typeof(GetUserInfoReceipt);
 
     /// <summary>
     ///     用户 ID，可以是好友，也可以是陌生人

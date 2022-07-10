@@ -9,8 +9,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record SendMessageAction : ActionBase
 {
-    internal override string Action => "send_message";
-    internal override Type Receipt => typeof(SendMessageReceipt);
+    protected override string Action => "send_message";
+    protected override Type Receipt => typeof(SendMessageReceipt);
 
     /// <summary>
     ///     发送的类型，可以为 private、group、channel 或扩展的类型，和消息事件的 detail_type 字段对应

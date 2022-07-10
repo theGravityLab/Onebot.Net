@@ -8,8 +8,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record UnbanGroupMemberAction : ActionBase
 {
-    internal override string Action => "unban_group_member";
-    internal override Type Receipt => typeof(UnbanGroupMemberReceipt);
+    protected override string Action => "unban_group_member";
+    protected override Type Receipt => typeof(UnbanGroupMemberReceipt);
 
     /// <summary>
     ///     群 ID

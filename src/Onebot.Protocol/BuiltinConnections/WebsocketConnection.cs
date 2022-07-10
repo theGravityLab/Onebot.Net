@@ -62,7 +62,7 @@ internal class WebsocketConnection : IConnection
     {
         var echo = Guid.NewGuid().ToString();
         var json = ModelFactory.SerializeAction(action, echo);
-        receipts.Add(echo, (action.Receipt, null));
+        receipts.Add(echo, (action.GetReceiptType(), null));
         client.Send(json);
 
         return await Task.Run(() =>

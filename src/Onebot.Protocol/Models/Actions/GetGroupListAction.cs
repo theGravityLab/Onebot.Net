@@ -8,6 +8,6 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record GetGroupListAction : ActionBase
 {
-    internal override string Action => "get_group_list";
-    internal override Type Receipt => typeof(GetGroupListReceipt);
+    protected override string Action => "get_group_list";
+    protected override Type Receipt => typeof(GetGroupListReceipt);
 }

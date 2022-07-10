@@ -8,8 +8,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record LeaveGroupAction : ActionBase
 {
-    internal override string Action => "leave_group";
-    internal override Type Receipt => typeof(LeaveGroupReceipt);
+    protected override string Action => "leave_group";
+    protected override Type Receipt => typeof(LeaveGroupReceipt);
 
     /// <summary>
     ///     群 ID

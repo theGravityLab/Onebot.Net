@@ -9,8 +9,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record UploadFileAction : ActionBase
 {
-    internal override string Action => "upload_file";
-    internal override Type Receipt => typeof(UploadFileReceipt);
+    protected override string Action => "upload_file";
+    protected override Type Receipt => typeof(UploadFileReceipt);
 
     /// <summary>
     ///     上传文件的方式，可以为 url、path、data 或扩展的方式

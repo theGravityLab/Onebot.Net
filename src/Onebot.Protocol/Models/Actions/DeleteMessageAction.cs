@@ -8,8 +8,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record DeleteMessageAction : ActionBase
 {
-    internal override string Action => "delete_message";
-    internal override Type Receipt => typeof(DeleteMessageReceipt);
+    protected override string Action => "delete_message";
+    protected override Type Receipt => typeof(DeleteMessageReceipt);
 
     /// <summary>
     ///     唯一的消息 ID

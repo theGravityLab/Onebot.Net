@@ -52,11 +52,16 @@ public static class ModelFactory
         serializer = JsonSerializer.Create(settings);
     }
 
-    public static EventBase ConstructEvent(JObject obj)
+    public static void RegisterEventModel<T>(string key)
+    where T: EventBase
+    {
+        eventRegistry.Add(key, typeof(T));
+    }
+
+    internal static EventBase ConstructEvent(JObject obj)
     {
         var type = obj.Value<string>("type");
         var detailedType = obj.Value<string>("detail_type");
-        var subType = obj.Value<string>("sub_type");
 
         var key = $"{type}.{detailedType}";
         if (eventRegistry.ContainsKey(key))
@@ -64,15 +69,19 @@ public static class ModelFactory
             var evt = obj.ToObject(eventRegistry[key], serializer) as EventBase;
             return evt;
         }
-
-        return new UnknownEvent();
+        else
+        {
+            var evt = obj.ToObject<UnknownEvent>(serializer);
+            evt!.RawObject = obj;
+            return evt;
+        }
     }
 
-    public static string SerializeAction(ActionBase action, string echo)
+    internal static string SerializeAction(ActionBase action, string echo)
     {
         dynamic obj = new
         {
-            action = action.Action,
+            action = action.GetAction(),
             @params = action,
             echo
         };
@@ -80,7 +89,7 @@ public static class ModelFactory
         return JsonConvert.SerializeObject(obj, settings);
     }
 
-    public static ReceiptBase ConstructReceipt(JObject obj, Type receipt)
+    internal static ReceiptBase ConstructReceipt(JObject obj, Type receipt)
     {
         return obj["data"].ToObject(receipt, serializer) as ReceiptBase;
     }

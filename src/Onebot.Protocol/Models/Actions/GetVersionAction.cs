@@ -8,6 +8,6 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record GetVersionAction : ActionBase
 {
-    internal override string Action => "get_version";
-    internal override Type Receipt => typeof(GetVersionReceipt);
+    protected override string Action => "get_version";
+    protected override Type Receipt => typeof(GetVersionReceipt);
 }

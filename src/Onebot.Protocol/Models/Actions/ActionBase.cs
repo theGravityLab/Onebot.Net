@@ -7,10 +7,13 @@ public abstract record ActionBase
     /// <summary>
     ///     动作名称
     /// </summary>
-    internal abstract string Action { get; }
+    protected abstract string Action { get; }
 
     /// <summary>
     ///     回执类型
     /// </summary>
-    internal abstract Type Receipt { get; }
+    protected abstract Type Receipt { get; }
+
+    internal string GetAction() => Action;
+    internal Type GetReceiptType() => Receipt;
 }

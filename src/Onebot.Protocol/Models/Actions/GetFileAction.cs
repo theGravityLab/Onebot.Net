@@ -8,8 +8,8 @@ namespace Onebot.Protocol.Models.Actions;
 /// </summary>
 public record GetFileAction : ActionBase
 {
-    internal override string Action => "get_file";
-    internal override Type Receipt => typeof(GetFileReceipt);
+    protected override string Action => "get_file";
+    protected override Type Receipt => typeof(GetFileReceipt);
 
     /// <summary>
     ///     文件 ID

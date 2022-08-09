@@ -14,6 +14,13 @@ public abstract record ActionBase
     /// </summary>
     protected abstract Type Receipt { get; }
 
-    internal string GetAction() => Action;
-    internal Type GetReceiptType() => Receipt;
+    internal string GetAction()
+    {
+        return Action;
+    }
+
+    internal Type GetReceiptType()
+    {
+        return Receipt;
+    }
 }

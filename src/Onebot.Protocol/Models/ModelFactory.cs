@@ -53,7 +53,7 @@ public static class ModelFactory
     }
 
     public static void RegisterEventModel<T>(string key)
-    where T: EventBase
+        where T : EventBase
     {
         eventRegistry.Add(key, typeof(T));
     }

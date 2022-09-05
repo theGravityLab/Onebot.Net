@@ -10,7 +10,7 @@ using Onebot.Protocol.Models.Events.Meta;
 using Onebot.Protocol.Models.Events.Notice;
 using Onebot.Protocol.Models.Receipts;
 
-namespace Onebot.Protocol.Models;
+namespace Onebot.Client;
 
 public static class ModelFactory
 {

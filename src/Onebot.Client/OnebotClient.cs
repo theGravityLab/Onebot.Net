@@ -5,7 +5,7 @@ using Onebot.Protocol.Models.Actions;
 using Onebot.Protocol.Models.Messages;
 using Onebot.Protocol.Models.Receipts;
 
-namespace Onebot.Protocol;
+namespace Onebot.Client;
 
 public class OnebotClient
 {
@@ -26,7 +26,7 @@ public class OnebotClient
             var receipt = await Connection.SendAsync(action, source.Token);
             return receipt;
         }
-        catch (OperationCanceledException e)
+        catch (OperationCanceledException)
         {
             return null;
         }
@@ -213,7 +213,11 @@ public class OnebotClient
 
         var action = new UploadFileAction
         {
-            Type = uri.Scheme switch { "file" => "path", "http" => "url", "https" => "url", "base64" => "data" },
+            Type = uri.Scheme switch
+            {
+                "file" => "path", "http" => "url", "https" => "url", "base64" => "data",
+                _ => throw new NotSupportedException($"{uri.Scheme} is not supported")
+            },
             Url = uri.AbsoluteUri,
             Path = uri.AbsoluteUri,
             Data = uri.ToString(),

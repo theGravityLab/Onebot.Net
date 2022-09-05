@@ -4,7 +4,7 @@ using Onebot.Protocol.Models.Actions;
 using Onebot.Protocol.Models.Events;
 using Onebot.Protocol.Models.Receipts;
 
-namespace Onebot.Protocol;
+namespace Onebot.Client;
 
 public interface IConnection
 {

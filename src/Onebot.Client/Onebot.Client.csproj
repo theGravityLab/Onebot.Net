@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <PackageVersion>2.0.143</PackageVersion>
+        <TargetFramework>net6.0</TargetFramework>
+        <Authors>GravityLab</Authors>
+        <Description>Onebot sucks</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/theGravityLab/Onebot.Net</RepositoryUrl>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Onebot.Protocol\Onebot.Protocol.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="Websocket.Client" Version="4.4.43" />
+      <PackageReference Include="Wupoo" Version="1.0.2" />
+    </ItemGroup>
+
+</Project>

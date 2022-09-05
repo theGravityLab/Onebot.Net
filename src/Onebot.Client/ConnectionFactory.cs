@@ -1,7 +1,7 @@
 using System;
-using Onebot.Protocol.BuiltinConnections;
+using Onebot.Client.BuiltinConnections;
 
-namespace Onebot.Protocol;
+namespace Onebot.Client;
 
 public static class ConnectionFactory
 {

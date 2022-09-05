@@ -11,7 +11,7 @@ using Onebot.Protocol.Models.Events;
 using Onebot.Protocol.Models.Receipts;
 using Websocket.Client;
 
-namespace Onebot.Protocol.BuiltinConnections;
+namespace Onebot.Client.BuiltinConnections;
 
 internal class WebsocketConnection : IConnection
 {

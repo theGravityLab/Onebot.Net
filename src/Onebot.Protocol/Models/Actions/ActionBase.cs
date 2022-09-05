@@ -14,12 +14,12 @@ public abstract record ActionBase
     /// </summary>
     protected abstract Type Receipt { get; }
 
-    internal string GetAction()
+    public string GetAction()
     {
         return Action;
     }
 
-    internal Type GetReceiptType()
+    public Type GetReceiptType()
     {
         return Receipt;
     }

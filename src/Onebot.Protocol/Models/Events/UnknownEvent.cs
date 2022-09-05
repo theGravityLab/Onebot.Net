@@ -1,5 +1,3 @@
-using Newtonsoft.Json.Linq;
-
 namespace Onebot.Protocol.Models.Events;
 
 /// <summary>
@@ -10,5 +8,5 @@ public record UnknownEvent : EventBase
     /// <summary>
     ///     事件原型
     /// </summary>
-    public JObject RawObject { get; set; }
+    public object RawObject { get; set; }
 }
